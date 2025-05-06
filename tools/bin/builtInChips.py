@@ -46,12 +46,19 @@ class Nand(builtInChip):
             "b": b
         }
         self.outputs = {"out": None}
+        self.pinSizes = {
+            "a": 1,
+            "b": 1,
+            "out": 1
+        }
     
     def typeCheck(self):
         assert type(self.inputs["a"]) == type(False), "Input a is not a boolean"
         assert type(self.inputs["b"]) == type(False), "Input b is not a boolean"
     
-    def eval(self):
+    def eval(self, inputs=None):
+        if inputs is not None:
+            self.updateInputs(inputs)
         self.outputs["out"] = not (self.inputs["a"] & self.inputs["b"])
 
 ### Project 1 Chips
@@ -60,11 +67,17 @@ class Not(builtInChip):
     def __init__(self):
         self.inputs = {"in": None}
         self.outputs = {"out": None}
+        self.pinSizes = {
+            "in": 1,
+            "out": 1
+        }
         
     def typeCheck(self):
         assert type(self.inputs["in"]) == type(False), "Input in is not a boolean"
     
-    def eval(self):
+    def eval(self, inputs=None):
+        if inputs is not None:
+            self.updateInputs(inputs)
         self.outputs["out"] = not self.inputs["in"]
 
 class And(builtInChip):
@@ -74,12 +87,19 @@ class And(builtInChip):
             "b": None
         }
         self.outputs = {"out": None}
+        self.pinSizes = {
+            "a": 1,
+            "b": 1,
+            "out": 1
+        }
         
     def typeCheck(self):
         assert type(self.inputs["a"]) == type(False), "Input a is not a boolean"
         assert type(self.inputs["b"]) == type(False), "Input b is not a boolean"
     
-    def eval(self):
+    def eval(self, inputs=None):
+        if inputs is not None:
+            self.updateInputs(inputs)
         self.outputs["out"] = self.inputs["a"] & self.inputs["b"]
 
 class Or(builtInChip):
@@ -89,12 +109,19 @@ class Or(builtInChip):
             "b": None
         }
         self.outputs = {"out": None}
+        self.pinSizes = {
+            "a": 1,
+            "b": 1,
+            "out": 1
+        }
         
     def typeCheck(self):
         assert type(self.inputs["a"]) == type(False), "Input a is not a boolean"
         assert type(self.inputs["b"]) == type(False), "Input b is not a boolean"
         
-    def eval(self):
+    def eval(self, inputs=None):
+        if inputs is not None:
+            self.updateInputs(inputs)
         self.outputs["out"] = self.inputs["a"] | self.inputs["b"]
     
 class Xor(builtInChip):
@@ -104,12 +131,19 @@ class Xor(builtInChip):
             "b": None
         }
         self.outputs = {"out": None}
+        self.pinSizes = {
+            "a": 1,
+            "b": 1,
+            "out": 1
+        }
     
     def typeCheck(self):
         assert type(self.inputs["a"]) == type(False), "Input a is not a boolean"
         assert type(self.inputs["b"]) == type(False), "Input b is not a boolean"
     
-    def eval(self):
+    def eval(self, inputs=None):
+        if inputs is not None:
+            self.updateInputs(inputs)
         self.outputs["out"] = self.inputs["a"] ^ self.inputs["b"]
     
 class Mux(builtInChip):
@@ -120,13 +154,21 @@ class Mux(builtInChip):
             "b": None
         }
         self.outputs = {"out": None}
+        self.pinSizes = {
+            "sel": 1,
+            "a": 1,
+            "b": 1,
+            "out": 1
+        }
     
     def typeCheck(self):
         assert type(self.inputs["sel"]) == type(False), "Input sel is not a boolean"
         assert type(self.inputs["a"]) == type(False), "Input a is not a boolean"
         assert type(self.inputs["b"]) == type(False), "Input b is not a boolean"
     
-    def eval(self):
+    def eval(self, inputs=None):
+        if inputs is not None:
+            self.updateInputs(inputs)
         if self.inputs["sel"]:
             self.outputs["out"] = self.inputs["b"]
         else:
@@ -142,12 +184,20 @@ class DMux(builtInChip):
             "a": None,
             "b": None
         }
+        self.pinSizes = {
+            "sel": 1,
+            "in": 1,
+            "a": 1,
+            "b": 1
+        }
         
     def typeCheck(self):
         assert type(self.inputs["sel"]) == type(False), "Input sel is not a boolean"
         assert type(self.inputs["in"]) == type(False), "Input in is not a boolean"
     
-    def eval(self):
+    def eval(self, inputs=None):
+        if inputs is not None:
+            self.updateInputs(inputs)
         if self.inputs["sel"]:
             self.outputs["a"] = False
             self.outputs["b"] = self.inputs["input"]
@@ -156,52 +206,167 @@ class DMux(builtInChip):
             self.outputs["b"] = False
     
 class Not16(builtInChip):
+    ## Assumes binary stored as binary string e.g. 0b0000
     def __init__(self):
         ## NOTE that in and out should be 16-bit busses
         self.inputs = {"in": None}
         self.outputs = {"out": None}
+        self.pinSizes = {
+            "in": 16,
+            "out": 16
+        }
     
-    def eval(self, in16):
-        outArr = []
-        for val in self.inputs["in"]:
-            outArr.append(not val)
-        self.outputs["out"] = outArr
+    def eval(self, inputs=None):
+        if inputs is not None:
+            self.updateInputs(inputs)
+        self.outputs["out"] = 0b1111111111111111 - self.inputs["in"]
         
-## TODO continue implementing built-in chip eval functions
 class And16(builtInChip):
     def __init__(self):
-        self.inputs = {}
-        self.outputs = {}
+        self.inputs = {
+            "a": None,
+            "b": None
+        }
+        self.outputs = {"out": None}
+        self.pinSizes = {
+            "a": 16,
+            "b": 16,
+            "out": 16
+        }
+    
+    def eval(self, inputs=None):
+        if inputs is not None:
+            self.updateInputs(inputs)
+        self.outputs["out"] = self.inputs["a"] & self.inputs["b"]
         
 class Or8Way(builtInChip):
     def __init__(self):
-        self.inputs = {}
-        self.outputs = {}
+        self.inputs = {
+            "in": None
+        }
+        self.outputs = {
+            "out": None
+        }
+        self.pinSizes = {
+            "in": 8,
+            "out": 1
+        }
         
 class Or16(builtInChip):
     def __init__(self):
-        self.inputs = {}
-        self.outputs = {}
+        self.inputs = {
+            "a": None,
+            "b": None
+        }
+        self.outputs = {
+            "out": None
+        }
+        self.pinSizes = {
+            "a": 16,
+            "b": 16,
+            "out": 16
+        }
 
+## TODO continue implementing built-in chip eval functions
 class Mux4Way16(builtInChip):
     def __init__(self):
-        self.inputs = {}
-        self.outputs = {}
+        self.inputs = {
+            "a": None,
+            "b": None,
+            "c": None,
+            "d": None,
+            "sel": None
+        }
+        self.outputs = {
+            "out": None
+        }
+        self.pinSizes = {
+            "a": 16,
+            "b": 16,
+            "c": 16,
+            "d": 16,
+            "sel": 2,
+            "out": 16
+        }
 
 class Mux8Way16(builtInChip):
     def __init__(self):
-        self.inputs = {}
-        self.outputs = {}
+        self.inputs = {
+            "a": None,
+            "b": None,
+            "c": None,
+            "d": None,
+            "e": None,
+            "f": None,
+            "g": None,
+            "h": None,
+            "sel": None
+        }
+        self.outputs = {
+            "out": None
+        }
+        self.pinSizes = {
+            "a": 16,
+            "b": 16,
+            "c": 16,
+            "d": 16,
+            "e": 16,
+            "f": 16,
+            "g": 16,
+            "h": 16,
+            "sel": 3,
+            "out": 16
+        }
 
 class DMux4Way(builtInChip):
     def __init__(self):
-        self.inputs = {}
-        self.outputs = {}
+        self.inputs = {
+            "in": None,
+            "sel": None
+        }
+        self.outputs = {
+            "a": None,
+            "b": None,
+            "c": None,
+            "d": None
+        }
+        self.pinSizes = {
+            "in": 1,
+            "sel": 2,
+            "a": 1,
+            "b": 1,
+            "c": 1,
+            "d": 1
+        }
 
 class DMux8Way(builtInChip):
     def __init__(self):
-        self.inputs = {}
-        self.outputs = {}
+        self.inputs = {
+            "in": None,
+            "sel": None
+        }
+        self.outputs = {
+            "a": None,
+            "b": None,
+            "c": None,
+            "d": None,
+            "e": None,
+            "f": None,
+            "g": None,
+            "h": None
+        }
+        self.pinSizes = {
+            "in": 1,
+            "sel": 3,
+            "a": 1,
+            "b": 1,
+            "c": 1,
+            "d": 1,
+            "e": 1,
+            "f": 1,
+            "g": 1,
+            "h": 1
+        }
 
 ### Project 2 Chips
 
@@ -239,7 +404,9 @@ class DFF(builtInChip):
         self.prevOutput = None
     
     ## DFF assumes eval is run on every clock cycle
-    def eval(self):
+    def eval(self, inputs=None):
+        if inputs is not None:
+            self.updateInputs(inputs)
         self.outputs["out"] = self.inputs["in"]
         
 ### Project 3 Chips
