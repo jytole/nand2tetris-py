@@ -1,5 +1,7 @@
 ## Define the boolean bus, where the first digit in binary is index 0 of the value array
 
+## !! MSB is index 0 !!
+
 class boolBus:
     def __init__(self, val = None):
         self.val = val
@@ -200,9 +202,9 @@ class DMux(builtInChip):
             self.updateInputs(inputs)
         if self.inputs["sel"]:
             self.outputs["a"] = False
-            self.outputs["b"] = self.inputs["input"]
+            self.outputs["b"] = self.inputs["in"]
         else:
-            self.outputs["a"] = self.inputs["input"]
+            self.outputs["a"] = self.inputs["in"]
             self.outputs["b"] = False
     
 class Not16(builtInChip):
@@ -251,6 +253,20 @@ class Or8Way(builtInChip):
             "in": 8,
             "out": 1
         }
+    
+    def eval(self, inputs=None):
+        if inputs is not None:
+            self.updateInputs(inputs)
+        # format "in" as an 8 bit binary string
+        input = format(self.inputs["in"], '08b')
+        self.outputs["out"] = ((input[0] == '1') | 
+                               (input[1] == '1') | 
+                               (input[2] == '1') | 
+                               (input[3] == '1') | 
+                               (input[4] == '1') | 
+                               (input[5] == '1') | 
+                               (input[6] == '1') | 
+                               (input[7] == '1'))
         
 class Or16(builtInChip):
     def __init__(self):
@@ -266,6 +282,11 @@ class Or16(builtInChip):
             "b": 16,
             "out": 16
         }
+        
+    def eval(self, inputs=None):
+        if inputs is not None:
+            self.updateInputs(inputs)
+        self.outputs["out"] = self.inputs["a"] | self.inputs["b"]
 
 ## TODO continue implementing built-in chip eval functions
 class Mux4Way16(builtInChip):
@@ -288,6 +309,26 @@ class Mux4Way16(builtInChip):
             "sel": 2,
             "out": 16
         }
+    
+    # !! MSB is index 0 !! #
+    def eval(self, inputs=None):
+        if inputs is not None:
+            self.updateInputs(inputs)
+        sel = format(self.inputs["sel"], '02b')
+        if sel[0] == '1':
+            if sel[1] == '1':
+                ##11
+                self.outputs["out"] = self.inputs["d"]
+            else:
+                #10
+                self.outputs["out"] = self.inputs["c"]
+        else:
+            if sel[1] == '1':
+                ##01
+                self.outputs["out"] = self.inputs["b"]
+            else:
+                ##00
+                self.outputs["out"] = self.inputs["a"]
 
 class Mux8Way16(builtInChip):
     def __init__(self):
@@ -317,6 +358,42 @@ class Mux8Way16(builtInChip):
             "sel": 3,
             "out": 16
         }
+    
+    # !! LSB is index 0 !! #
+    def eval(self, inputs=None):
+        if inputs is not None:
+            self.updateInputs(inputs)
+        sel = format(self.inputs["sel"], '03b')
+        if sel[0] == '1':
+            if sel[1] == '1':
+                if sel[2] == '1':
+                    ##111
+                    self.outputs["out"] = self.inputs["h"]
+                else:
+                    #110
+                    self.outputs["out"] = self.inputs["g"]
+            else:
+                if sel[2] == '1':
+                    ##101
+                    self.outputs["out"] = self.inputs["f"]
+                else:
+                    ##100
+                    self.outputs["out"] = self.inputs["e"]
+        else:
+            if sel[1] == '1':
+                if sel[2] == '1':
+                    ##011
+                    self.outputs["out"] = self.inputs["d"]
+                else:
+                    #010
+                    self.outputs["out"] = self.inputs["c"]
+            else:
+                if sel[2] == '1':
+                    ##001
+                    self.outputs["out"] = self.inputs["b"]
+                else:
+                    ##000
+                    self.outputs["out"] = self.inputs["a"]
 
 class DMux4Way(builtInChip):
     def __init__(self):
@@ -338,6 +415,29 @@ class DMux4Way(builtInChip):
             "c": 1,
             "d": 1
         }
+    
+    def eval(self, inputs=None):
+        if inputs is not None:
+            self.updateInputs(inputs)
+        sel = format(self.inputs["sel"], '02b')
+        self.outputs["a"] = False
+        self.outputs["b"] = False
+        self.outputs["c"] = False
+        self.outputs["d"] = False
+        if sel[0] == '1':
+            if sel[1] == '1':
+                ##11
+                self.outputs["d"] = self.inputs["in"]
+            else:
+                #10
+                self.outputs["c"] = self.inputs["in"]
+        else:
+            if sel[1] == '1':
+                ##01
+                self.outputs["b"] = self.inputs["in"]
+            else:
+                ##00
+                self.outputs["a"] = self.inputs["in"]
 
 class DMux8Way(builtInChip):
     def __init__(self):
@@ -367,6 +467,49 @@ class DMux8Way(builtInChip):
             "g": 1,
             "h": 1
         }
+        
+    def eval(self, inputs=None):
+        if inputs is not None:
+            self.updateInputs(inputs)
+        sel = format(self.inputs["sel"], '03b')
+        self.outputs["a"] = False
+        self.outputs["b"] = False
+        self.outputs["c"] = False
+        self.outputs["d"] = False
+        self.outputs["e"] = False
+        self.outputs["f"] = False
+        self.outputs["g"] = False
+        self.outputs["h"] = False
+        if sel[0] == '1':
+            if sel[1] == '1':
+                if sel[2] == '1':
+                    ##111
+                    self.outputs["h"] = self.inputs["in"]
+                else:
+                    #110
+                    self.outputs["g"] = self.inputs["in"]
+            else:
+                if sel[2] == '1':
+                    ##101
+                    self.outputs["f"] = self.inputs["in"]
+                else:
+                    ##100
+                    self.outputs["e"] = self.inputs["in"]
+        else:
+            if sel[1] == '1':
+                if sel[2] == '1':
+                    ##011
+                    self.outputs["d"] = self.inputs["in"]
+                else:
+                    #010
+                    self.outputs["c"] = self.inputs["in"]
+            else:
+                if sel[2] == '1':
+                    ##001
+                    self.outputs["b"] = self.inputs["in"]
+                else:
+                    ##000
+                    self.outputs["a"] = self.inputs["in"]
 
 ### Project 2 Chips
 
